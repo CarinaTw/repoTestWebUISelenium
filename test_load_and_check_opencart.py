@@ -20,7 +20,7 @@
 """
 
 
-def test_opencart_title(browser):
-    browser.get("http://127.0.0.1/")
-    assert browser.title == 'Your Store'
+def test_opencart_title(driver_factory):
+    driver_factory.get("http://127.0.0.1/")
+    assert driver_factory.title == 'Your Store'
 

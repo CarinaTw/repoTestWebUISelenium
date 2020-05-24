@@ -7,7 +7,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--url",
         help="This is request url",
-        default='http://127.0.0.1:80'
+        default='http://localhost:80'
     )
 
     parser.addoption(
@@ -24,11 +24,15 @@ def url(request):
 
 
 @pytest.fixture
-def browser(request):
+def driver_factory(request):
     b = request.config.getoption("--browser")
     if b == "chrome":
         options = ChromeOptions()
         options.headless = True
+        options.add_argument('--disable-infobars')
+        options.add_argument('--disable-notifications')
+        options.add_argument('--disable-web-security')
+        options.add_argument('--ignore-certificate-errors')
         wd = webdriver.Chrome(options=options)
         request.addfinalizer(wd.quit)
         return wd
@@ -42,4 +46,3 @@ def browser(request):
         options.headless = True
         wd = webdriver.Ie(options=options)
         return wd
-
