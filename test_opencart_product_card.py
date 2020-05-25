@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 import pytest
 import re
 from page import Page
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class ProductPage(Page):
@@ -29,16 +30,17 @@ def test_product_page_title(driver_factory):
     assert prod_page.driver.title == prod_page.get_page_title()
 
 
-list_items = ['Product Code', 'Reward Points', 'Availability']
-@pytest.mark.parametrize("item_name", [list_items])
+@pytest.mark.parametrize("item_name", [('Product Code', 'Reward Points', 'Availability')])
 def test_product_attributes(driver_factory, item_name):
     prod_page = ProductPage(driver_factory)
     prod_page.driver.get(prod_page.url)
-    for i in range(len(list_items)):
+
+    for i in range(len(item_name)):
         el = prod_page.driver.find_elements(By.XPATH, "//div[@id='content']//"
-                                                      "div[@class='col-sm-4']//ul[@class='list-unstyled']/li")[i].text
-        attr = re.split(':', el)
+                                                      "div[@class='col-sm-4']//ul[@class='list-unstyled']/li")[i]
+        attr = re.split(':', el.text)
         assert attr[0] == item_name[i]
+        print(item_name[i])
 
 
 def test_product_attributes_price(driver_factory):

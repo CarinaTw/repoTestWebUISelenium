@@ -8,6 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from page import Page
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
 class LoginPage(Page):
@@ -90,7 +91,56 @@ def test_login_page_login_frong_user_check_err_msg(driver_factory):
     assert alert_item.text == 'Warning: No match for E-Mail Address and/or Password.'
 
 
+def test_login_page_login_check(driver_factory):
+    login_page = LoginPage(driver_factory)
+    login_page.driver.get(login_page.url)
+    el = login_page.driver.find_element(By.ID, "input-email")
+    el.click()
+    el.send_keys('dex@example.ru')
 
+    el = login_page.driver.find_element(By.ID, "input-password")
+    el.click()
+    el.send_keys('codex')
+
+    btn = login_page.driver.find_element(By.XPATH, "//input[@class='btn btn-primary']")
+    btn.click()
+    try:
+        wait = WebDriverWait(driver_factory, 5)
+        assert wait.until(EC.title_is("My Account"))
+    except TimeoutException:
+        TimeoutException('My Account page not loaded')
+
+
+def test_login_page_logout_check(driver_factory):
+    login_page = LoginPage(driver_factory)
+    login_page.driver.get(login_page.url)
+    el = login_page.driver.find_element(By.ID, "input-email")
+    el.click()
+    el.send_keys('dex@example.ru')
+
+    el = login_page.driver.find_element(By.ID, "input-password")
+    el.click()
+    el.send_keys('codex')
+
+    btn = login_page.driver.find_element(By.XPATH, "//input[@class='btn btn-primary']")
+    btn.click()
+
+    wait = WebDriverWait(driver_factory, 5)
+    wait.until(EC.title_is("My Account"))
+    try:
+        logout_btn = login_page.driver.find_element_by_link_text("Logout")
+        logout_btn.click()
+        wait = WebDriverWait(driver_factory, 5)
+        wait.until(EC.title_is("Account Logout"))
+
+        logout_btn = login_page.driver.find_element_by_link_text("Continue")
+        logout_btn.click()
+        wait = WebDriverWait(driver_factory, 5)
+        wait.until(EC.title_is("Your Store"))
+    except TimeoutException:
+        TimeoutException("Logout page not loaded")
+
+    sleep(5)
 
 
 

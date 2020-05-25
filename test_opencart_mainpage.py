@@ -8,6 +8,10 @@ from selenium.webdriver.common.keys import Keys
 import pytest
 import re
 from page import Page
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
 class MainPage(Page):
@@ -17,43 +21,55 @@ class MainPage(Page):
         self.driver = page.driver
 
 
-def test_opencart_main_page_title(driver_factory):
+def test_main_page_title(driver_factory):
     main_page = MainPage(driver_factory)
     main_page.driver.get(main_page.url)
-    assert main_page.driver.title == 'Your Store'
+    main_page.driver.implicitly_wait(1)  # неявное ожидание
+    wait = WebDriverWait(driver_factory, 3)
+    wait.until(EC.title_is('Your Store'))
 
 
 @pytest.mark.parametrize("searched", ['ipone', 'sumsung'])
-def test_opencart_main_page_search_field_exist(driver_factory, searched):
+def test_main_page_search_field_exist(driver_factory, searched):
     main_page = MainPage(driver_factory)
     main_page.driver.get(main_page.url)
     elem = main_page.driver.find_element(By.XPATH, "//input[@name='search']")
     elem.click()
     elem.send_keys(searched)
     elem.send_keys(Keys.ENTER)
-    assert main_page.driver.title == 'Search - {}'.format(searched)
+    wait = WebDriverWait(driver_factory, 2)
+    wait.until(EC.title_is('Search - {}'.format(searched)))
     assert main_page.driver.current_url == 'http://localhost/index.php?route=product/search&search={}'.format(searched)
 
 
-def test_opencart_main_page_search_button_exist(driver_factory):
+def test_main_page_search_button_exist(driver_factory):
     main_page = MainPage(driver_factory)
     main_page.driver.get(main_page.url)
     elem = main_page.driver.find_element(By.XPATH, "//div[@id='search']//button[@type='button']")
     elem.click()
-    sleep(2)
-    el_text = main_page.driver.find_element(By.XPATH, "//div[@id='content']//p[2]")
+    wait = WebDriverWait(driver_factory, 2)
+    el_text = wait.until(EC.visibility_of_element_located((By.XPATH, "//div[@id='content']//p[2]")))
     assert el_text.text == 'There is no product that matches the search criteria.'
 
 
-def test_opencart_main_page_slideshow_exist(driver_factory):
+def test_main_page_slideshow_exist(driver_factory):
     main_page = MainPage(driver_factory)
     main_page.driver.get(main_page.url)
-    elem = main_page.driver.find_element(By.ID, "slideshow0")
-    elem.click()
+    try:
+        wait = WebDriverWait(driver_factory, 3)
+        assert wait.until(EC.visibility_of_element_located((By.ID, "slideshow0")))
+    except NoSuchElementException:
+        raise NoSuchElementException('Слайдшоу не было отображено на странице')
 
-    prod_url = main_page.driver.current_url
-    str_prod = re.findall('product_id=\d*', prod_url)
-    s = re.split(r'=', str_prod[0])[1]
 
-    assert main_page.driver.find_element(By.XPATH, "//div[@id='product']//input[@name='product_id'][@value=%s]" % s), \
-        'Product with id={} is not found'.format(s)
+def test_main_page_catalog_page_opened(driver_factory):
+    main_page = MainPage(driver_factory)
+    main_page.driver.get(main_page.url)
+    wait = WebDriverWait(driver_factory, 3)
+    try:
+        el = main_page.driver.find_element_by_link_text("Desktops")
+        ActionChains(main_page.driver).move_to_element(el).perform()
+        main_page.driver.find_element_by_link_text("Show All Desktops").click()
+        assert wait.until(EC.url_matches(r'http:\/\/localhost\/index\.php\?route=product\/category\&path\=\d*'))
+    except NoSuchElementException:
+        raise NoSuchElementException('Страница с каталогом товаров не была загружена')

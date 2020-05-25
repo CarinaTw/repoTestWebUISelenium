@@ -28,7 +28,7 @@ def driver_factory(request):
     b = request.config.getoption("--browser")
     if b == "chrome":
         options = ChromeOptions()
-        options.headless = True
+        options.headless = False
         options.add_argument('--disable-infobars')
         options.add_argument('--disable-notifications')
         options.add_argument('--disable-web-security')
