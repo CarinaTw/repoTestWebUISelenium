@@ -10,7 +10,7 @@ from selenium.common.exceptions import TimeoutException
 
 
 import logging
-logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO, style='{')
+logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO, filename='selenium.log')
 
 
 @pytest.fixture(scope='session')

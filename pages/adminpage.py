@@ -2,9 +2,11 @@ from selenium.webdriver.common.by import By
 from .base import BasePage
 import re
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
 
 import logging
-logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO, filename='admin.log')
 
 
 class AdminLoginPage(BasePage):
@@ -61,32 +63,64 @@ class AdminLoginPage(BasePage):
         self.logger.info('Add product ...')
         product_params = [product_name, product_meta, product_model]
         self.logger.info('product_params = {}'.format(product_params))
-        catalog = self.find_element(locator=self.MENU_CATALOG_LOCATOR)
-        catalog.click()
+        try:
+            catalog = self.find_element(locator=self.MENU_CATALOG_LOCATOR)
+            catalog.click()
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.MENU_CATALOG_LOCATOR))
+            raise NoSuchElementException
 
-        products = self.find_elements(locator=self.MENU_CATALOG_SUB_ITEMS_LOCATOR)
-        products[1].click()
+        try:
+            products = self.find_elements(locator=self.MENU_CATALOG_SUB_ITEMS_LOCATOR)
+            products[1].click()
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.MENU_CATALOG_SUB_ITEMS_LOCATOR))
+            raise NoSuchElementException
 
-        add_new = self.find_element(locator=self.BUTTON_ADD_NEW_LOCATOR)
-        add_new.click()
+        try:
+            add_new = self.find_element(locator=self.BUTTON_ADD_NEW_LOCATOR)
+            add_new.click()
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.BUTTON_ADD_NEW_LOCATOR))
+            raise NoSuchElementException
 
-        prod_name = self.find_element(locator=self.INPUT_NAME_LOCATOR)
-        prod_name.click()
-        prod_name.send_keys(product_params[0])
+        try:
+            prod_name = self.find_element(locator=self.INPUT_NAME_LOCATOR)
+            prod_name.click()
+            prod_name.send_keys(product_params[0])
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.INPUT_NAME_LOCATOR))
+            raise NoSuchElementException
 
-        meta = self.find_element(locator=self.INPUT_META_LOCATOR)
-        meta.click()
-        meta.send_keys(product_params[1])
+        try:
+            meta = self.find_element(locator=self.INPUT_META_LOCATOR)
+            meta.click()
+            meta.send_keys(product_params[1])
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.INPUT_META_LOCATOR))
+            raise NoSuchElementException
 
-        data_tab = self.find_elements(locator=self.NAV_TAB_LOCATOR)
-        data_tab[1].click()
+        try:
+            data_tab = self.find_elements(locator=self.NAV_TAB_LOCATOR)
+            data_tab[1].click()
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.NAV_TAB_LOCATOR))
+            raise NoSuchElementException
 
-        data_model = self.find_element(locator=self.INPUT_MODEL_LOCATOR)
-        data_model.click()
-        data_model.send_keys(product_params[2])
+        try:
+            data_model = self.find_element(locator=self.INPUT_MODEL_LOCATOR)
+            data_model.click()
+            data_model.send_keys(product_params[2])
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.INPUT_MODEL_LOCATOR))
+            raise NoSuchElementException
 
-        save = self.find_element(locator=self.BUTTON_SAVE_PRODUCT_LOCATOR)
-        save.click()
+        try:
+            save = self.find_element(locator=self.BUTTON_SAVE_PRODUCT_LOCATOR)
+            save.click()
+        except NoSuchElementException:
+            self.logger("Element {} not found".format(self.BUTTON_SAVE_PRODUCT_LOCATOR))
+            raise NoSuchElementException
         return products
 
     def check_prod_exist_by_name(self, product_name):
