@@ -8,9 +8,14 @@ from pages.productpage import ProductPage
 from pages.userloginpage import UserLoginPage
 from selenium.common.exceptions import TimeoutException
 
-
 import logging
 logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO, filename='selenium.log')
+
+
+def pytest_addoption(parser):
+    parser.addoption("--browser", action="store", default="chrome",
+                     choices=["chrome", "firefox", "opera", "yandex"])
+    parser.addoption("--executor", action="store", default="192.168.0.205")
 
 
 @pytest.fixture(scope='session')
@@ -18,16 +23,63 @@ def browser(request):
     test_name = request.node.name
     logger = logging.getLogger('browser fixture')
     logger.info("\nStarted tests {}".format(test_name))
-    options = ChromeOptions()
-    options.headless = False
-    options.add_argument('--disable-infobars')
-    options.add_argument('--disable-notifications')
-    options.add_argument('--disable-web-security')
-    options.add_argument('--ignore-certificate-errors')
-    wd = webdriver.Chrome(options=options)
-    logger.info("\nChrome started {}".format(wd.desired_capabilities))
+
+    b = request.config.getoption("--browser")
+    if b == "chrome":
+        options = ChromeOptions()
+        options.headless = True
+        options.add_argument('--disable-infobars')
+        options.add_argument('--disable-notifications')
+        options.add_argument('--disable-web-security')
+        options.add_argument('--ignore-certificate-errors')
+        wd = webdriver.Chrome(options=options)
+        logger.info("\n {} started {}".format(b, wd.desired_capabilities))
+        request.addfinalizer(wd.quit)
+        return wd
+    elif b == "firefox":
+        options = FirefoxOptions()
+        options.headless = True
+        wd = webdriver.Firefox(options=options)
+        logger.info("\n {} started {}".format(b, wd.desired_capabilities))
+        request.addfinalizer(wd.quit)
+        return wd
+
+
+@pytest.fixture(scope='session')
+def remote(request):
+    """ для запуска тестов в browserstack """
+
+    BROWSERSTACK_URL = 'https://bsuser71126:SEypBX88V7VHyHx7UGy2@hub-cloud.browserstack.com/wd/hub'
+
+    desired_cap = {
+        'os': 'Windows',
+        'os_version': '8',
+        'browser': 'Firefox',
+        'browser_version': '16',
+        'name': "bsuser71126's First Test"
+    }
+
+    wd = webdriver.Remote(
+        command_executor=BROWSERSTACK_URL,
+        desired_capabilities=desired_cap
+    )
+
     request.addfinalizer(wd.quit)
     return wd
+
+
+# @pytest.fixture(scope='session')
+# def remote(request):
+#     """ для запуска тестов в Selenium Server Grid """
+#
+#     browser = request.config.getoption("--browser")
+#     executor = request.config.getoption("--executor")
+#
+#     wd = webdriver.Remote(command_executor=f"http://{executor}:4445/wd/hub",
+#                           desired_capabilities={"browserName": browser})    # , "platform": "linux"
+#
+#     request.addfinalizer(wd.quit)
+#     return wd
 
 
 @pytest.fixture()

@@ -1,6 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
+import time
 
 LOGO_LOCATOR = (By.XPATH, "//body//div[@id='header-logo']//img[@src='view/image/logo.png']")
 FOOTER_TEXT_LOCATOR = (By.XPATH, "//footer[@id='footer']")
@@ -66,3 +67,4 @@ def test_admin_login_product_edit(admin_page, product_name_1, product_name_2):
         except TimeoutException:
             raise TimeoutException('Something went wrong when editing product')
     assert not admin_page.check_prod_exist_by_name(product_name_2) == []
+
