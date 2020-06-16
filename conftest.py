@@ -15,7 +15,7 @@ logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=loggi
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
                      choices=["chrome", "firefox", "opera", "yandex"])
-    parser.addoption("--executor", action="store", default="192.168.0.205")
+    parser.addoption("--selenoid", action="store", default="localhost")
 
 
 @pytest.fixture(scope='session')
@@ -24,48 +24,44 @@ def browser(request):
     logger = logging.getLogger('browser fixture')
     logger.info("\nStarted tests {}".format(test_name))
 
-    b = request.config.getoption("--browser")
-    if b == "chrome":
-        options = ChromeOptions()
-        options.headless = True
-        options.add_argument('--disable-infobars')
-        options.add_argument('--disable-notifications')
-        options.add_argument('--disable-web-security')
-        options.add_argument('--ignore-certificate-errors')
-        wd = webdriver.Chrome(options=options)
-        logger.info("\n {} started {}".format(b, wd.desired_capabilities))
-        request.addfinalizer(wd.quit)
-        return wd
-    elif b == "firefox":
-        options = FirefoxOptions()
-        options.headless = True
-        wd = webdriver.Firefox(options=options)
-        logger.info("\n {} started {}".format(b, wd.desired_capabilities))
-        request.addfinalizer(wd.quit)
-        return wd
+    selenoid = request.config.getoption("--selenoid")
+    exec_url = f"http://{selenoid}:4444/wd/hub"
 
+    browser = request.config.getoption("--browser")
 
-@pytest.fixture(scope='session')
-def remote(request):
-    """ для запуска тестов в browserstack """
+    # capabilities for selenoid
+    caps = {"browserName": browser,
+            "version": "81.0",
+            "enableLog": True,
+            "enableVNC": True,
+            "screenResolution": "1280x720",
+            "name": request.node.name
+            }
 
-    BROWSERSTACK_URL = 'https://bsuser71126:SEypBX88V7VHyHx7UGy2@hub-cloud.browserstack.com/wd/hub'
-
-    desired_cap = {
-        'os': 'Windows',
-        'os_version': '8',
-        'browser': 'Firefox',
-        'browser_version': '16',
-        'name': "bsuser71126's First Test"
-    }
-
-    wd = webdriver.Remote(
-        command_executor=BROWSERSTACK_URL,
-        desired_capabilities=desired_cap
-    )
-
+    wd = webdriver.Remote(command_executor=exec_url, desired_capabilities=caps)
+    logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
+    logger.info(f"\n Start session {wd.session_id}")
     request.addfinalizer(wd.quit)
     return wd
+
+    # if b == "chrome":
+    #     options = ChromeOptions()
+    #     options.headless = True
+    #     options.add_argument('--disable-infobars')
+    #     options.add_argument('--disable-notifications')
+    #     options.add_argument('--disable-web-security')
+    #     options.add_argument('--ignore-certificate-errors')
+    #     wd = webdriver.Chrome(options=options)
+    #     logger.info("\n {} started {}".format(b, wd.desired_capabilities))
+    #     request.addfinalizer(wd.quit)
+    #     return wd
+    # elif b == "firefox":
+    #     options = FirefoxOptions()
+    #     options.headless = True
+    #     wd = webdriver.Firefox(options=options)
+    #     logger.info("\n {} started {}".format(b, wd.desired_capabilities))
+    #     request.addfinalizer(wd.quit)
+    #     return wd
 
 
 # @pytest.fixture(scope='session')
