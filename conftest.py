@@ -15,7 +15,7 @@ logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=loggi
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
                      choices=["chrome", "firefox", "opera", "yandex"])
-    parser.addoption("--selenoid", action="store", default="localhost")
+    # parser.addoption("--selenoid", action="store", default="localhost")
 
 
 @pytest.fixture(scope='session')
@@ -24,44 +24,44 @@ def browser(request):
     logger = logging.getLogger('browser fixture')
     logger.info("\nStarted tests {}".format(test_name))
 
-    selenoid = request.config.getoption("--selenoid")
-    exec_url = f"http://{selenoid}:4444/wd/hub"
+    # selenoid = request.config.getoption("--selenoid")
+    # exec_url = f"http://{selenoid}:4444/wd/hub"
 
     browser = request.config.getoption("--browser")
 
     # capabilities for selenoid
-    caps = {"browserName": browser,
-            "version": "81.0",
-            "enableLog": True,
-            "enableVNC": True,
-            "screenResolution": "1280x720",
-            "name": request.node.name
-            }
+    # caps = {"browserName": browser,
+    #         "version": "81.0",
+    #         "enableLog": True,
+    #         "enableVNC": True,
+    #         "screenResolution": "1280x720",
+    #         "name": request.node.name
+    #         }
+    #
+    # wd = webdriver.Remote(command_executor=exec_url, desired_capabilities=caps)
+    # logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
+    # logger.info(f"\n Start session {wd.session_id}")
+    # request.addfinalizer(wd.quit)
+    # return wd
 
-    wd = webdriver.Remote(command_executor=exec_url, desired_capabilities=caps)
-    logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
-    logger.info(f"\n Start session {wd.session_id}")
-    request.addfinalizer(wd.quit)
-    return wd
-
-    # if b == "chrome":
-    #     options = ChromeOptions()
-    #     options.headless = True
-    #     options.add_argument('--disable-infobars')
-    #     options.add_argument('--disable-notifications')
-    #     options.add_argument('--disable-web-security')
-    #     options.add_argument('--ignore-certificate-errors')
-    #     wd = webdriver.Chrome(options=options)
-    #     logger.info("\n {} started {}".format(b, wd.desired_capabilities))
-    #     request.addfinalizer(wd.quit)
-    #     return wd
-    # elif b == "firefox":
-    #     options = FirefoxOptions()
-    #     options.headless = True
-    #     wd = webdriver.Firefox(options=options)
-    #     logger.info("\n {} started {}".format(b, wd.desired_capabilities))
-    #     request.addfinalizer(wd.quit)
-    #     return wd
+    if browser == "chrome":
+        options = ChromeOptions()
+        options.headless = True
+        options.add_argument('--disable-infobars')
+        options.add_argument('--disable-notifications')
+        options.add_argument('--disable-web-security')
+        options.add_argument('--ignore-certificate-errors')
+        wd = webdriver.Chrome(options=options)
+        logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
+        request.addfinalizer(wd.quit)
+        return wd
+    elif browser == "firefox":
+        options = FirefoxOptions()
+        options.headless = True
+        wd = webdriver.Firefox(options=options)
+        logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
+        request.addfinalizer(wd.quit)
+        return wd
 
 
 # @pytest.fixture(scope='session')

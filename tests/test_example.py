@@ -1,5 +1,6 @@
 import time
 
+
 def test_yandex_0(browser):
     browser.get("https://ya.ru")
     browser.find_element_by_id("text")
