@@ -2,7 +2,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 import logging
-logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO)
 
 
 class BasePage(object):
