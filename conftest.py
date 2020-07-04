@@ -7,6 +7,7 @@ from pages.catalogpage import CatalogPage
 from pages.productpage import ProductPage
 from pages.userloginpage import UserLoginPage
 from selenium.common.exceptions import TimeoutException
+from databases.generate_testdata import TestProduct
 
 import logging
 logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=logging.INFO, filename='selenium.log')
@@ -15,7 +16,6 @@ logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s', level=loggi
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
                      choices=["chrome", "firefox", "opera", "yandex"])
-    # parser.addoption("--selenoid", action="store", default="localhost")
 
 
 @pytest.fixture(scope='session')
@@ -24,25 +24,7 @@ def browser(request):
     logger = logging.getLogger('browser fixture')
     logger.info("\nStarted tests {}".format(test_name))
 
-    # selenoid = request.config.getoption("--selenoid")
-    # exec_url = f"http://{selenoid}:4444/wd/hub"
-
     browser = request.config.getoption("--browser")
-
-    # capabilities for selenoid
-    # caps = {"browserName": browser,
-    #         "version": "81.0",
-    #         "enableLog": True,
-    #         "enableVNC": True,
-    #         "screenResolution": "1280x720",
-    #         "name": request.node.name
-    #         }
-    #
-    # wd = webdriver.Remote(command_executor=exec_url, desired_capabilities=caps)
-    # logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
-    # logger.info(f"\n Start session {wd.session_id}")
-    # request.addfinalizer(wd.quit)
-    # return wd
 
     if browser == "chrome":
         options = ChromeOptions()
@@ -62,20 +44,6 @@ def browser(request):
         logger.info("\n {} started {}".format(browser, wd.desired_capabilities))
         request.addfinalizer(wd.quit)
         return wd
-
-
-# @pytest.fixture(scope='session')
-# def remote(request):
-#     """ для запуска тестов в Selenium Server Grid """
-#
-#     browser = request.config.getoption("--browser")
-#     executor = request.config.getoption("--executor")
-#
-#     wd = webdriver.Remote(command_executor=f"http://{executor}:4445/wd/hub",
-#                           desired_capabilities={"browserName": browser})    # , "platform": "linux"
-#
-#     request.addfinalizer(wd.quit)
-#     return wd
 
 
 @pytest.fixture()
@@ -147,3 +115,12 @@ def user_login_page(browser):
         raise TimeoutException
     logger.info("\nUser Login page is opened")
     return page
+
+
+@pytest.fixture()
+def generate_test_data():
+    td = TestProduct()
+    td.insert_product()
+    yield td.products[0]
+    td.remove_product_data(td.products[0]['product_id'])
+
