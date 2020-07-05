@@ -65,6 +65,7 @@ class AdminLoginPage(BasePage):
         self.logger.info('product_params = {}'.format(product_params))
         try:
             catalog = self.find_element(locator=self.MENU_CATALOG_LOCATOR)
+            self.driver.implicitly_wait(10)
             catalog.click()
         except NoSuchElementException:
             self.logger("Element {} not found".format(self.MENU_CATALOG_LOCATOR))
@@ -72,6 +73,7 @@ class AdminLoginPage(BasePage):
 
         try:
             products = self.find_elements(locator=self.MENU_CATALOG_SUB_ITEMS_LOCATOR)
+            self.driver.implicitly_wait(10)
             products[1].click()
         except NoSuchElementException:
             self.logger("Element {} not found".format(self.MENU_CATALOG_SUB_ITEMS_LOCATOR))
@@ -79,6 +81,7 @@ class AdminLoginPage(BasePage):
 
         try:
             add_new = self.find_element(locator=self.BUTTON_ADD_NEW_LOCATOR)
+            self.driver.implicitly_wait(10)
             add_new.click()
         except NoSuchElementException:
             self.logger("Element {} not found".format(self.BUTTON_ADD_NEW_LOCATOR))
@@ -86,6 +89,7 @@ class AdminLoginPage(BasePage):
 
         try:
             prod_name = self.find_element(locator=self.INPUT_NAME_LOCATOR)
+            self.driver.implicitly_wait(10)
             prod_name.click()
             prod_name.send_keys(product_params[0])
         except NoSuchElementException:
@@ -94,6 +98,7 @@ class AdminLoginPage(BasePage):
 
         try:
             meta = self.find_element(locator=self.INPUT_META_LOCATOR)
+            self.driver.implicitly_wait(10)
             meta.click()
             meta.send_keys(product_params[1])
         except NoSuchElementException:
@@ -102,6 +107,7 @@ class AdminLoginPage(BasePage):
 
         try:
             data_tab = self.find_elements(locator=self.NAV_TAB_LOCATOR)
+            self.driver.implicitly_wait(10)
             data_tab[1].click()
         except NoSuchElementException:
             self.logger("Element {} not found".format(self.NAV_TAB_LOCATOR))
@@ -109,6 +115,7 @@ class AdminLoginPage(BasePage):
 
         try:
             data_model = self.find_element(locator=self.INPUT_MODEL_LOCATOR)
+            self.driver.implicitly_wait(10)
             data_model.click()
             data_model.send_keys(product_params[2])
         except NoSuchElementException:
@@ -117,6 +124,7 @@ class AdminLoginPage(BasePage):
 
         try:
             save = self.find_element(locator=self.BUTTON_SAVE_PRODUCT_LOCATOR)
+            self.driver.implicitly_wait(10)
             save.click()
         except NoSuchElementException:
             self.logger("Element {} not found".format(self.BUTTON_SAVE_PRODUCT_LOCATOR))
@@ -137,6 +145,23 @@ class AdminLoginPage(BasePage):
                 assert p[0] == product_name
                 items_position.append(i)
         self.logger.info('Found products with name = {}'.format(product_name))
+        self.logger.info('Positions in table = {}'.format(items_position))
+        return items_position
+
+    def check_prod_exist_by_id(self, product_id):
+        ''' Function check product exist
+            and returns list of items positions '''
+        self.logger.info('Check product exist by id \n product_id = {}'.format(product_id))
+        items_position = []
+        table_rows = self.find_elements(locator=self.TABLE_ROWS_LOCATOR)
+        for i in range(len(table_rows)):
+            rows = self.find_elements(self.TABLE_ROWS_LOCATOR)
+            row = rows[i]
+            p = re.findall(product_id, row.text)
+            if p != []:
+                assert p[0] == product_id
+                items_position.append(i)
+        self.logger.info('Found products with id = {}'.format(product_id))
         self.logger.info('Positions in table = {}'.format(items_position))
         return items_position
 
@@ -165,10 +190,11 @@ class AdminLoginPage(BasePage):
 
             del_btn = self.find_element(self.DELETE_BUTTON_LOCATOR)
             del_btn.click()
-            self.driver.implicitly_wait(10)
+            self.driver.implicitly_wait(20)
 
             alert = self.driver.switch_to.alert
             alert.accept()
+            self.driver.implicitly_wait(20)
 
     def edit_product(self, product_name_1, product_name_2):
         self.logger.info('Editing product ...')
@@ -178,13 +204,10 @@ class AdminLoginPage(BasePage):
             pass
 
         elif len(prod_pos_list) == 1:
-            checkbox = self.find_elements(self.CHECKBOX_PRODUCT_LOCATOR)
-            pos = prod_pos_list[0]
-            checkbox[pos + 1].click()
-            self.driver.implicitly_wait(2)
 
+            pos = prod_pos_list[0]
             edit_btn = self.find_elements(self.EDIT_BUTTON_LOCATOR)
-            edit_btn[pos + 1].click()
+            edit_btn[pos].click()
 
             prod_name = self.find_element(locator=self.INPUT_NAME_LOCATOR)
             prod_name.click()
